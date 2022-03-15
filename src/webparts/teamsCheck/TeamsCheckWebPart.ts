@@ -3,17 +3,25 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   IPropertyPaneConfiguration,
-  PropertyPaneTextField
+  PropertyPaneTextField,
+  PropertyPaneToggle,
+  IPropertyPaneToggleProps,
+  PropertyPaneSlider
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-
 import * as strings from 'TeamsCheckWebPartStrings';
 import TeamsCheck from './components/TeamsCheck';
 import { ITeamsCheckProps } from './components/ITeamsCheckProps';
+import DirectoryHook from "./components/DirectoryHook";
+// import { IDirectoryProps } from "./components/IDirectoryProps";
 
 export interface ITeamsCheckWebPartProps {
-  description: string;
+  title: string;
+  searchFirstName: boolean;
+  searchProps: string;
+  clearTextSearchProps: string;
+  pageSize: number;
 }
 
 export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheckWebPartProps> {
@@ -46,16 +54,18 @@ export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheck
       siteTabTitle = "We are in the context of following site: " + this.context.pageContext.web.title;
     }
     const element: React.ReactElement<ITeamsCheckProps> = React.createElement(
-      TeamsCheck,
+      DirectoryHook,
       {
-        description: this.properties.description,
-        isDarkTheme: this._isDarkTheme,
-        environmentMessage: this._environmentMessage,
-        hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName,
-        title,
-        subTitle,
-        siteTabTitle,
+        title: this.properties.title,
+        context: this.context,
+        searchFirstName: this.properties.searchFirstName,
+        displayMode: this.displayMode,
+        updateProperty: (value: string) => {
+            this.properties.title = value;
+        },
+        searchProps: this.properties.searchProps,
+        clearTextSearchProps: this.properties.clearTextSearchProps,
+        pageSize: this.properties.pageSize
       }
     );
 
@@ -104,8 +114,34 @@ export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheck
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyPaneTextField("title", {
+                  label: strings.TitleFieldLabel
+                }),
+                PropertyPaneToggle("searchFirstName", {
+                    checked: false,
+                    label: "Search on First Name ?"
+                }),
+                PropertyPaneTextField('searchProps', {
+                    label: strings.SearchPropsLabel,
+                    description: strings.SearchPropsDesc,
+                    value: this.properties.searchProps,
+                    multiline: false,
+                    resizable: false
+                }),
+                PropertyPaneTextField('clearTextSearchProps', {
+                    label: strings.ClearTextSearchPropsLabel,
+                    description: strings.ClearTextSearchPropsDesc,
+                    value: this.properties.clearTextSearchProps,
+                    multiline: false,
+                    resizable: false
+                }),
+                PropertyPaneSlider('pageSize', {
+                    label: 'Results per page',
+                    showValue: true,
+                    max: 20,
+                    min: 2,
+                    step: 2,
+                    value: this.properties.pageSize
                 })
               ]
             }
