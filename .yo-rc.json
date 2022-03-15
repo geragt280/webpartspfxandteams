@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": "1.14.0",
+    "libraryName": "teams-app",
+    "libraryId": "3ff05f58-bb26-4e73-aa98-cb2f4885ad7b",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "teams-app",
+    "solutionShortDescription": "teams-app description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
