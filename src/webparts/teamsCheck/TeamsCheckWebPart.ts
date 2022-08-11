@@ -8,13 +8,16 @@ import {
   IPropertyPaneToggleProps,
   PropertyPaneSlider
 } from '@microsoft/sp-property-pane';
+import { PaneConfigs } from './PaneConfigs';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import * as strings from 'TeamsCheckWebPartStrings';
-import TeamsCheck from './components/TeamsCheck';
+import PaneConfigClass from './PaneConfigs';
 import { ITeamsCheckProps } from './components/ITeamsCheckProps';
 import DirectoryHook from "./components/DirectoryHook";
 // import { IDirectoryProps } from "./components/IDirectoryProps";
+import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
+import { initializeIcons as initializeIcons2  } from '@microsoft/office-ui-fabric-react-bundle';
 
 export interface ITeamsCheckWebPartProps {
   title: string;
@@ -26,19 +29,30 @@ export interface ITeamsCheckWebPartProps {
 
 export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheckWebPartProps> {
 
-  private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
 
   protected onInit(): Promise<void> {
-    this._environmentMessage = this._getEnvironmentMessage();
 
-    return super.onInit();
+    return super.onInit().then(() => {
+      initializeIcons();
+      initializeIcons2();
+
+      const pconfigList = new PaneConfigClass();
+      pconfigList.getAllConfigData();
+    });
   }
 
   public render(): void {
     let title: string = '';
     let subTitle: string = '';
     let siteTabTitle: string = '';
+
+    if(!this.properties.title){
+      this.properties.title = PaneConfigs.webparttitle;
+      this.properties.pageSize = PaneConfigs.pageSize;
+      this.properties.clearTextSearchProps = PaneConfigs.clearTextSearchProps;
+      this.properties.searchFirstName = PaneConfigs.searchFirstName;
+      this.properties.searchProps = PaneConfigs.searchProps;
+    }
 
     if (this.context.sdks.microsoftTeams) {
       // We have teams context for the web part
@@ -59,25 +73,29 @@ export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheck
         title: this.properties.title,
         context: this.context,
         searchFirstName: this.properties.searchFirstName,
-        displayMode: this.displayMode,
-        updateProperty: (value: string) => {
+        displayMode: 1,
+        updateTitleProperty: (value: string) => {
             this.properties.title = value;
         },
         searchProps: this.properties.searchProps,
         clearTextSearchProps: this.properties.clearTextSearchProps,
-        pageSize: this.properties.pageSize
+        pageSize: this.properties.pageSize ? this.properties.pageSize : 2,
+        platformIsTeams: this.context.sdks.microsoftTeams ? true : false,
+        updateSearchProps: (value: string) => {
+          this.properties.searchProps = value;
+        },
+        updateClearTextSearchProps: (value: string) => {
+          this.properties.clearTextSearchProps = value;
+        },
+        updatePageSize: (value: number) => {
+          this.properties.pageSize = value;
+        },
+        updateSearchFirstName: (value: boolean) => {
+          this.properties.searchFirstName = value;
+        }
       }
     );
-
     ReactDom.render(element, this.domElement);
-  }
-
-  private _getEnvironmentMessage(): string {
-    if (!!this.context.sdks.microsoftTeams) { // running in Teams
-      return this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
-    }
-
-    return this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment;
   }
 
   protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
@@ -85,7 +103,6 @@ export default class TeamsCheckWebPart extends BaseClientSideWebPart<ITeamsCheck
       return;
     }
 
-    this._isDarkTheme = !!currentTheme.isInverted;
     const {
       semanticColors
     } = currentTheme;

@@ -1,11 +1,17 @@
 define([], function() {
   return {
-    "PropertyPaneDescription": "Description",
-    "BasicGroupName": "Group Name",
-    "DescriptionFieldLabel": "Description Field",
-    "AppLocalEnvironmentSharePoint": "The app is running on your local environment as SharePoint web part",
-    "AppLocalEnvironmentTeams": "The app is running on your local environment as Microsoft Teams app",
-    "AppSharePointEnvironment": "The app is running on SharePoint page",
-    "AppTeamsTabEnvironment": "The app is running in Microsoft Teams"
+    "PropertyPaneDescription": "Teams Personal Directory",
+    "BasicGroupName": "Properties",
+    DropDownPlaceLabelMessage: "Sort People by ",
+    DropDownPlaceHolderMessage: "Sort by",
+    SearchPlaceHolder: "Search for People",
+    "TitleFieldLabel": "Web Part Title",
+    "SearchPropsLabel": "Properties to search",
+    "DirectoryMessage": "No users found in directory",
+    "SearchPropsDesc": "Enter the properties separated by comma to be used for search",
+    "ClearTextSearchPropsLabel":"Properties whose values are not replaced",
+    "ClearTextSearchPropsDesc":"Enter the properties separated by comma to be sent as it is without replacing space with '+'",
+    "PagingLabel": "Results per page",
+    "LoadingText": "Searching for user. Please wait...",
   }
 });

@@ -7,7 +7,7 @@ import { IDirectoryState } from "./IDirectoryState";
 import * as strings from "TeamsCheckWebPartStrings";
 import {
     Spinner, SpinnerSize, MessageBar, MessageBarType, SearchBox, Icon, Label,
-    Pivot, PivotItem, PivotLinkFormat, PivotLinkSize, Dropdown, IDropdownOption
+    Pivot, PivotItem, PivotLinkFormat, PivotLinkSize, Dropdown, IDropdownOption,
 } from "office-ui-fabric-react";
 import { Stack, IStackStyles, IStackTokens } from 'office-ui-fabric-react/lib/Stack';
 import { debounce } from "throttle-debounce";
@@ -17,6 +17,9 @@ import { Environment, EnvironmentType } from "@microsoft/sp-core-library";
 import { spMockServices } from "../../../SPServices/spMockServices";
 import { IDirectoryProps } from './IDirectoryProps';
 import Paging from './Pagination/Paging';
+import { ConfigurationPanel } from './ConfigurationPanel';
+import { useBoolean } from '@fluentui/react-hooks';
+import PaneConfigClass, { PaneConfigs } from '../PaneConfigs';
 
 const slice: any = require('lodash/slice');
 const filter: any = require('lodash/filter');
@@ -38,8 +41,12 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
         hasError: false,
         indexSelectedKey: "A",
         searchString: "LastName",
-        searchText: ""
+        searchText: "",
+        isTeams: true,
+        // isTeams: props.platformIsTeams,
     });
+    const [uiRender, { toggle: uiRenderToggler }] = useBoolean(false);
+
     const orderOptions: IDropdownOption[] = [
         { key: "FirstName", text: "First Name" },
         { key: "LastName", text: "Last Name" },
@@ -47,7 +54,7 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
         { key: "Location", text: "Location" },
         { key: "JobTitle", text: "Job Title" }
     ];
-    const color = props.context.microsoftTeams ? "white" : "";
+    const color = props.context.microsoftTeams ? "#444791" : "";
     // Paging
     const [pagedItems, setPagedItems] = useState<any[]>([]);
     const [pageSize, setPageSize] = useState<number>(props.pageSize ? props.pageSize : 10);
@@ -55,8 +62,8 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
 
     const _onPageUpdate = async (pageno?: number) => {
         var currentPge = (pageno) ? pageno : currentPage;
-        var startItem = ((currentPge - 1) * pageSize);
-        var endItem = currentPge * pageSize;
+        var startItem = ((currentPge - 1) * PaneConfigs.pageSize);
+        var endItem = currentPge * PaneConfigs.pageSize;
         let filItems = slice(state.users, startItem, endItem);
         setCurrentPage(currentPge);
         setPagedItems(filItems);
@@ -98,15 +105,16 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
         setalphaKey(item.props.itemKey);
         setCurrentPage(1);
     };
+
     const _searchByAlphabets = async (initialSearch: boolean) => {
         setstate({ ...state, isLoading: true, searchText: '' });
         let users = null;
         if (initialSearch) {
-            if (props.searchFirstName)
+            if (PaneConfigs.searchFirstName)
                 users = await _services.searchUsersNew('', `FirstName:a*`, false);
             else users = await _services.searchUsersNew('a', '', true);
         } else {
-            if (props.searchFirstName)
+            if (PaneConfigs.searchFirstName)
                 users = await _services.searchUsersNew('', `FirstName:${alphaKey}*`, false);
             else users = await _services.searchUsersNew(`${alphaKey}`, '', true);
         }
@@ -128,12 +136,12 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
         try {
             setstate({ ...state, searchText: searchText, isLoading: true });
             if (searchText.length > 0) {
-                let searchProps: string[] = props.searchProps && props.searchProps.length > 0 ?
-                    props.searchProps.split(',') : ['FirstName', 'LastName', 'WorkEmail', 'Department'];
+                let searchProps: string[] = PaneConfigs.searchProps && PaneConfigs.searchProps.length > 0 ?
+                PaneConfigs.searchProps.split(',') : ['FirstName', 'LastName', 'WorkEmail', 'Department'];
                 let qryText: string = '';
                 let finalSearchText: string = searchText ? searchText.replace(/ /g, '+') : searchText;
-                if (props.clearTextSearchProps) {
-                    let tmpCTProps: string[] = props.clearTextSearchProps.indexOf(',') >= 0 ? props.clearTextSearchProps.split(',') : [props.clearTextSearchProps];
+                if (PaneConfigs.clearTextSearchProps) {
+                    let tmpCTProps: string[] = PaneConfigs.clearTextSearchProps.indexOf(',') >= 0 ? PaneConfigs.clearTextSearchProps.split(',') : [PaneConfigs.clearTextSearchProps];
                     if (tmpCTProps.length > 0) {
                         searchProps.map((srchprop, index) => {
                             let ctPresent: any[] = filter(tmpCTProps, (o) => { return o.toLowerCase() == srchprop.toLowerCase(); });
@@ -185,7 +193,7 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
         }
     };
 
-    const _searchBoxChanged = (newvalue: string): void => {
+    const _searchBoxChanged = (html,newvalue: string): void => {
         setCurrentPage(1);
         _searchUsers(newvalue);
     };
@@ -273,9 +281,9 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
     };
 
     useEffect(() => {
-        setPageSize(props.pageSize);
+        setPageSize(PaneConfigs.pageSize);
         if (state.users) _onPageUpdate();
-    }, [state.users, props.pageSize]);
+    }, [state.users, props.pageSize, PaneConfigs.pageSize]);
 
     useEffect(() => {
         if (alphaKey.length > 0 && alphaKey != "0") _searchByAlphabets(false);
@@ -284,17 +292,23 @@ const DirectoryHook: React.FC<IDirectoryProps> = (props) => {
     useEffect(() => {
         _loadAlphabets();
         _searchByAlphabets(true);
-    }, [props]);
+    }, [props, PaneConfigs]);
+
+
 
     return (
         <div className={styles.directory}>
-            <WebPartTitle displayMode={props.displayMode} title={props.title}
-                updateProperty={props.updateProperty} className={styles.subTitle} />
+            {/* <WebPartTitle displayMode={props.displayMode} title={props.title} updateProperty={props.updateTitleProperty} className={styles.subTitle} /> */}
+            <h3 className={styles.subTitle}>{PaneConfigs.webparttitle}</h3>
+            
+            <div>
+                { state.isTeams && <ConfigurationPanel updateTitleProperty={props.updateTitleProperty} updateSearchProps={props.updateSearchProps} updateClearTextSearchProps={props.updateClearTextSearchProps} updatePageSize={props.updatePageSize} updateSearchFirstName={props.updateSearchFirstName} uitoggler={uiRenderToggler} />}
+            </div>
             <div className={styles.searchBox}>
                 <SearchBox placeholder={strings.SearchPlaceHolder} className={styles.searchTextBox}
                     onSearch={_searchUsers}
                     value={state.searchText}
-                    // onChange={_searchBoxChanged} 
+                    onChange={_searchBoxChanged} 
                 />
                 <div>
                     <Pivot className={styles.alphabets} linkFormat={PivotLinkFormat.tabs}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "teams-app-client-side-solution",
+    "name": "teams-directory-client-side-solution",
     "id": "3ff05f58-bb26-4e73-aa98-cb2f4885ad7b",
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
@@ -35,6 +35,6 @@
     ]
   },
   "paths": {
-    "zippedPackage": "solution/teams-app.sppkg"
+    "zippedPackage": "solution/teams-directory.sppkg"
   }
 }

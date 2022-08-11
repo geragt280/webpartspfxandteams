@@ -7,4 +7,5 @@ export interface IDirectoryState {
   indexSelectedKey: string;
   searchString: string;
   searchText: string;
+  isTeams:boolean;
 }

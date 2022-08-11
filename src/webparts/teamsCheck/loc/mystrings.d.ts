@@ -1,22 +1,17 @@
 declare interface ITeamsCheckWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  DescriptionFieldLabel: string;
-  AppLocalEnvironmentSharePoint: string;
-  AppLocalEnvironmentTeams: string;
-  AppSharePointEnvironment: string;
-  AppTeamsTabEnvironment: string;
   DropDownPlaceLabelMessage: string;
   DropDownPlaceHolderMessage: string;
   SearchPlaceHolder: string;
   TitleFieldLabel: string;
-  DirectoryMessage: string;
-  LoadingText: string;
   SearchPropsLabel: string;
+  DirectoryMessage: string;
   SearchPropsDesc: string;
   ClearTextSearchPropsLabel: string;
   ClearTextSearchPropsDesc: string;
   PagingLabel: string;
+  LoadingText: string;
 }
 
 declare module 'TeamsCheckWebPartStrings' {

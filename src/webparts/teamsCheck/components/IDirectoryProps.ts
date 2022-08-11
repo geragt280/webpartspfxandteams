@@ -5,8 +5,13 @@ export interface IDirectoryProps {
   displayMode: DisplayMode;
   context: WebPartContext;
   searchFirstName: boolean;
-  updateProperty: (value: string) => void;
+  updateTitleProperty: (value: string) => void;
   searchProps?: string;
   clearTextSearchProps?: string;
   pageSize?: number;
+  platformIsTeams:boolean;
+  updateSearchProps: (value: string) => void;
+  updateClearTextSearchProps: (value: string) => void;
+  updatePageSize: (value: number) => void;
+  updateSearchFirstName: (value: boolean) => void;
 }
